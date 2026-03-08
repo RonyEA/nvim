@@ -78,6 +78,27 @@ Theme UI picker:
 - `<leader>qr`: Quarto render.
 - `<leader>qa`: Quarto activate (LSP/chunk features).
 
+Recommended Quarto workflow (R-first):
+
+- Start in a `.qmd` file and run `<leader>qa` once.
+- Insert R chunks quickly with `<leader>qir`.
+- Execute chunk code with your REPL flow (`vim-slime` or Molten).
+- Keep the live document open with `<leader>qp` while editing.
+- Render final output with `<leader>qr`.
+
+Handy chunk shortcuts (`quarto`/`rmd` buffers):
+
+- `<leader>qir`: insert
+	```
+	```{r}
+
+	```
+- `<leader>qip`: insert Python chunk
+- `<leader>qib`: insert Bash chunk
+- Visual `<leader>qwr`: wrap selection in an R chunk
+- Visual `<leader>qwp`: wrap selection in a Python chunk
+- Visual `<leader>qwb`: wrap selection in a Bash chunk
+
 `.ipynb` (Python notebooks):
 
 - Notebook files open through `jupytext` in `py:percent` style for editing in Neovim.

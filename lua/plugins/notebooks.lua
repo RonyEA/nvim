@@ -34,6 +34,60 @@ return {
     },
     config = function(_, opts)
       require("quarto").setup(opts)
+
+      local function insert_chunk(lang)
+        local row = vim.api.nvim_win_get_cursor(0)[1]
+        local lines = {
+          "```{" .. lang .. "}",
+          "",
+          "```",
+        }
+        vim.api.nvim_buf_set_lines(0, row, row, false, lines)
+        vim.api.nvim_win_set_cursor(0, { row + 1, 0 })
+      end
+
+      local function wrap_visual_chunk(lang)
+        local start_pos = vim.fn.getpos("'<")
+        local end_pos = vim.fn.getpos("'>")
+        local srow = start_pos[2] - 1
+        local erow = end_pos[2]
+
+        vim.api.nvim_buf_set_lines(0, erow, erow, false, { "```" })
+        vim.api.nvim_buf_set_lines(0, srow, srow, false, { "```{" .. lang .. "}" })
+      end
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "quarto", "rmd" },
+        callback = function(ev)
+          local map = function(mode, lhs, rhs, desc)
+            vim.keymap.set(mode, lhs, rhs, { buffer = ev.buf, desc = desc })
+          end
+
+          map("n", "<leader>qir", function()
+            insert_chunk("r")
+          end, "Quarto: insert R chunk")
+
+          map("n", "<leader>qip", function()
+            insert_chunk("python")
+          end, "Quarto: insert Python chunk")
+
+          map("n", "<leader>qib", function()
+            insert_chunk("bash")
+          end, "Quarto: insert Bash chunk")
+
+          map("v", "<leader>qwr", function()
+            wrap_visual_chunk("r")
+          end, "Quarto: wrap selection in R chunk")
+
+          map("v", "<leader>qwp", function()
+            wrap_visual_chunk("python")
+          end, "Quarto: wrap selection in Python chunk")
+
+          map("v", "<leader>qwb", function()
+            wrap_visual_chunk("bash")
+          end, "Quarto: wrap selection in Bash chunk")
+        end,
+      })
     end,
     keys = {
       { "<leader>qp", "<cmd>QuartoPreview<cr>", desc = "Quarto: preview" },
