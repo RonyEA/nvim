@@ -23,7 +23,7 @@ return {
     end,
     keys = {
       -- Visual mode: send selection
-      { "<leader>ss", "<Plug>SlimeRegionSend", mode = "v", desc = "Slime send selection" },
+      { "<leader>s;", "<Plug>SlimeRegionSend", mode = "v", desc = "Slime send selection" },
       -- Normal mode: send current line
       { "<leader>sl", "<Plug>SlimeLineSend", mode = "n", desc = "Slime send line" },
       -- Normal mode: send paragraph
