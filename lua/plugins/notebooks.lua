@@ -59,6 +59,8 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "quarto", "rmd" },
         callback = function(ev)
+          pcall(vim.cmd, "silent! QuartoActivate")
+
           local map = function(mode, lhs, rhs, desc)
             vim.keymap.set(mode, lhs, rhs, { buffer = ev.buf, desc = desc })
           end

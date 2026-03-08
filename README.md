@@ -114,6 +114,7 @@ System tools needed:
 - `quarto` CLI for preview/render.
 - `jupytext` (`pip install jupytext`) for `.ipynb` conversion.
 - Jupyter kernel tools for Molten (for Python: `pip install pynvim jupyter ipykernel`).
+- R language server for chunk completions in `.qmd`: in R run `install.packages("languageserver")`.
 
 ## Testing and R IDE Boost
 

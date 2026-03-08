@@ -3,6 +3,8 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
+        r_language_server = {},
+
         -- Avoid duplicate diagnostics: use only basedpyright.
         pyright = false,
         basedpyright = {
