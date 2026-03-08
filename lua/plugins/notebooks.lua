@@ -8,6 +8,10 @@ return {
           qmd = "quarto",
         },
       })
+
+      -- Use markdown parser for quarto/rmd so syntax highlighting works reliably.
+      pcall(vim.treesitter.language.register, "markdown", "quarto")
+      pcall(vim.treesitter.language.register, "markdown", "rmd")
     end,
     dependencies = {
       "jmbuhr/otter.nvim",
