@@ -3,7 +3,10 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        r_language_server = {},
+        r_language_server = {
+          mason = false,
+          cmd = { "R", "--slave", "-e", "languageserver::run()" },
+        },
 
         -- Avoid duplicate diagnostics: use only basedpyright.
         pyright = false,
