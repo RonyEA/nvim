@@ -32,3 +32,12 @@ vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
     pcall(activate_venv)
   end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "quarto", "rmd", "markdown" },
+  callback = function()
+    -- Keep fenced chunk markers like ```{r} visible in notebook-style docs.
+    vim.opt_local.conceallevel = 0
+    vim.opt_local.concealcursor = ""
+  end,
+})
