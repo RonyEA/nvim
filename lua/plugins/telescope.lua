@@ -5,6 +5,16 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-telescope/telescope-ui-select.nvim",
+    {
+      "nvim-telescope/telescope-fzf-native.nvim",
+      build = "make",
+    },
+    {
+      "nvim-telescope/telescope-frecency.nvim",
+      dependencies = {
+        "kkharji/sqlite.lua",
+      },
+    },
   },
   keys = {
     -- Plugin files
@@ -42,9 +52,42 @@ return {
     },
 
     -- Standard Telescope pickers
-    { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+    {
+      "<leader>ff",
+      function()
+        local ok = pcall(require("telescope").extensions.frecency.frecency, {
+          workspace = "CWD",
+          prompt_title = "Smart Files (Recent + Frequent)",
+        })
+        if not ok then
+          require("telescope.builtin").find_files({
+            hidden = true,
+          })
+        end
+      end,
+      desc = "Find Files (Smart)",
+    },
+    {
+      "<leader>fR",
+      function()
+        require("telescope").extensions.frecency.frecency({
+          workspace = "CWD",
+          prompt_title = "Recent + Frequent Files",
+        })
+      end,
+      desc = "Recent/Frequent Files",
+    },
     { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
     { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
+    {
+      "<leader>fo",
+      function()
+        require("telescope.builtin").oldfiles({
+          cwd_only = true,
+        })
+      end,
+      desc = "Recent Files (Project)",
+    },
     { "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help Tags" },
     { "<leader>gs", "<cmd>Telescope git_status<cr>", desc = "Git Status" },
   },
@@ -116,6 +159,24 @@ return {
     }
 
     opts.extensions = opts.extensions or {}
+    opts.extensions.fzf = {
+      fuzzy = true,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    }
+    opts.extensions.frecency = {
+      show_scores = true,
+      show_unindexed = true,
+      ignore_patterns = {
+        "*.git/*",
+        "*/tmp/*",
+      },
+      default_workspace = "CWD",
+      workspaces = {
+        CWD = (vim.uv or vim.loop).cwd(),
+      },
+    }
     opts.extensions["ui-select"] = themes.get_dropdown({
       previewer = false,
       layout_config = {
@@ -128,5 +189,7 @@ return {
   config = function(_, opts)
     require("telescope").setup(opts)
     pcall(require("telescope").load_extension, "ui-select")
+    pcall(require("telescope").load_extension, "fzf")
+    pcall(require("telescope").load_extension, "frecency")
   end,
 }

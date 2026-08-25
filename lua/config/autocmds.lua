@@ -33,11 +33,35 @@ vim.api.nvim_create_autocmd({ "BufEnter", "DirChanged" }, {
   end,
 })
 
+vim.filetype.add({
+  extension = {
+    jsonl = "json",
+    ndjson = "json",
+  },
+})
+
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "quarto", "rmd", "markdown" },
+  pattern = { "quarto", "rmd" },
   callback = function()
     -- Keep fenced chunk markers like ```{r} visible in notebook-style docs.
     vim.opt_local.conceallevel = 0
     vim.opt_local.concealcursor = ""
+  end,
+})
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    local groups = {
+      "Normal", "NormalNC", "NormalFloat", "FloatBorder", "FloatTitle",
+      "SignColumn", "EndOfBuffer", "LineNr", "CursorLineNr",
+      "NeoTreeNormal", "NeoTreeNormalNC", "NeoTreeEndOfBuffer",
+      "NeoTreeWinSeparator", "NeoTreeStatusLine", "NeoTreeTabInactive",
+      "NeoTreeTabActive", "NeoTreeTabSeparatorActive", "NeoTreeTabSeparatorInactive",
+      "TelescopeNormal", "TelescopeBorder",
+      "WhichKeyFloat", "MasonNormal", "LazyNormal",
+    }
+    for _, g in ipairs(groups) do
+      vim.api.nvim_set_hl(0, g, { bg = "none" })
+    end
   end,
 })

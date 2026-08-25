@@ -2,7 +2,11 @@ return {
   "zbirenbaum/copilot.lua",
   event = "InsertEnter", -- Lazy load on first insert for faster startup
   opts = {
-    suggestion = { enabled = true, auto_trigger = true },
+    suggestion = {
+      -- Inline ghost text is off; using CopilotChat chat-first workflow instead.
+      -- To re-enable, set enabled = true and uncomment the keymap block.
+      enabled = false,
+    },
     panel = { enabled = true },
     filetypes = {
       markdown = true,

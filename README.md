@@ -6,15 +6,19 @@ Refer to the [documentation](https://lazyvim.github.io/installation) to get star
 ## Agent Workflow (CopilotChat)
 
 - `<leader>aa`: Open Copilot Chat.
+- `<leader>am`: Select the default Copilot Chat model.
 - `<leader>aA`: Project-aware ask (forces workspace-tool usage instead of filename guessing).
+- `<leader>ac`: Open Claude Code in a floating terminal.
 - `<leader>aw`: Run `/WorkspaceAudit` prompt (glob -> grep -> file workflow).
 - Visual mode: `<leader>cq` explain, `<leader>cr` review, `<leader>cf` fix.
 
 Tips:
 
 - Use `@copilot` in prompts when you want tool-calling (workspace search/read/edit with approval).
+- Use `:CopilotChatModels` to switch models interactively, or type `$<model>` in chat to override the model for one prompt.
+- Use `:ClaudeCode` to open Claude Code in the current working directory, or `:ClaudeCode path/to/project` to target a different directory.
 - Add resources explicitly when needed: `#glob:**/*`, `#grep:pattern`, `#file:path/to/file`.
-- Keep instructions in `.github/copilot-instructions.md` or `AGENTS.md` per project.
+- Keep project guidance in `CLAUDE.md`, `.github/copilot-instructions.md`, or `AGENTS.md`.
 
 ## Python and R Workflows
 
