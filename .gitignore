@@ -6,3 +6,8 @@ debug
 foo.*
 *.log
 data
+
+# R session state -- an R REPL started here once and left these behind.
+.RData
+.Rhistory
+.Rproj.user/
