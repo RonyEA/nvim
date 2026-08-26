@@ -1,175 +1,133 @@
-# 💤 LazyVim
+# nvim
 
-A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
-Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+Neovim config for an R + Python + Quarto workflow, running on **Omarchy**
+(Arch + Hyprland). LazyVim base.
 
-## Agent Workflow (CopilotChat)
+This replaced the pre-Omarchy version of this repo on 2026-08-26. The old
+config is still in this repo's history, before commit "Rebuild on Omarchy's
+LazyVim".
 
-- `<leader>aa`: Open Copilot Chat.
-- `<leader>am`: Select the default Copilot Chat model.
-- `<leader>aA`: Project-aware ask (forces workspace-tool usage instead of filename guessing).
-- `<leader>ac`: Open Claude Code in a floating terminal.
-- `<leader>aw`: Run `/WorkspaceAudit` prompt (glob -> grep -> file workflow).
-- Visual mode: `<leader>cq` explain, `<leader>cr` review, `<leader>cf` fix.
+## What this is
 
-Tips:
+Omarchy ships its own preconfigured LazyVim. Rather than replace it, this
+config **merges into it** — Omarchy's theme integration, transparency and
+OSC-52 clipboard are left untouched, and the R/Python/coding layer sits on top.
+That matters practically: `omarchy theme set <name>` still restyles Neovim,
+because `lua/plugins/theme.lua` is a **symlink** into
+`~/.local/state/omarchy/current/theme/`.
 
-- Use `@copilot` in prompts when you want tool-calling (workspace search/read/edit with approval).
-- Use `:CopilotChatModels` to switch models interactively, or type `$<model>` in chat to override the model for one prompt.
-- Use `:ClaudeCode` to open Claude Code in the current working directory, or `:ClaudeCode path/to/project` to target a different directory.
-- Add resources explicitly when needed: `#glob:**/*`, `#grep:pattern`, `#file:path/to/file`.
-- Keep project guidance in `CLAUDE.md`, `.github/copilot-instructions.md`, or `AGENTS.md`.
+Files owned by Omarchy — do not edit, they came from the `omarchy-nvim` package:
 
-## Python and R Workflows
+```
+lua/plugins/theme.lua                    -> symlink, theme sync
+lua/plugins/all-themes.lua                  21 pre-cached colorschemes
+lua/plugins/omarchy-theme-hotreload.lua     live theme reload
+lua/plugins/disable-news-alert.lua
+lua/plugins/snacks-animated-scrolling-off.lua
+lua/config/remote_clipboard.lua             OSC-52 yank over tmux/SSH
+plugin/after/transparency.lua               transparent background
+```
 
-Python (debugging):
+## Requirements
 
-- `<leader>dpm`: Debug Python test method under cursor.
-- `<leader>dpc`: Debug Python test class under cursor.
-- Visual mode `<leader>dps`: Debug selected Python code.
-- Python DAP automatically prefers `VIRTUAL_ENV`, then project `.venv/venv/env`, then `python3`.
+| Tool | Why | Install |
+|---|---|---|
+| `R` + `languageserver` | R LSP | `pacman -S r`; `R -e 'install.packages("languageserver")'` |
+| `vscDebugger` | R debugging (`<leader>dR`) | `R -e 'install.packages("vscDebugger", repos="https://manuelhentschel.r-universe.dev")'` |
+| `radian` | R REPL used with slime | `pip install radian` |
+| `tmux` | **required** by vim-slime | `pacman -S tmux` |
+| `quarto`, `pandoc` | `.qmd` preview/render | `yay -S quarto-cli`; `pacman -S pandoc-cli` |
+| `ruff` | Python lint/format | `pacman -S ruff` |
 
-R (debugging):
+Mason installs the rest on first launch: `basedpyright`, `marksman`,
+`markdownlint-cli2`, `debugpy`.
 
-- `<leader>dR`: Start R debug for current file via nvim-dap.
-- Requires R package: `install.packages("vscDebugger")`.
+## The REPL workflow
 
-Debug quick reference:
+**vim-slime is the only REPL path.** Earlier versions of this config carried
+five overlapping ones (iron.nvim, molten, toggleterm floats, R.nvim's console,
+slime); they collided on the `<leader>r*` prefix and none shared state.
 
-- See `debug.md` for a complete end-to-end debugger workflow (breakpoints, stepping, REPL/eval, watches, scopes, and console).
+Neovim must be running **inside tmux**:
 
-REPL (daily loop):
+1. Start tmux, open a second pane, run `radian` (R) or `ipython` (Python).
+2. In Neovim, `<leader>sc` **once** to pick that pane.
+3. `<leader>sl` line · `<leader>sp` paragraph · `<leader>s;` selection (visual).
 
-- `vim-slime` (primary):
-	- `<leader>sl`: Send line
-	- Visual mode `<leader>ss`: Send selection
-	- `<leader>sp`: Send paragraph
-	- `<leader>sc`: Configure target pane
-- `iron.nvim` (secondary REPL):
-	- `<leader>rs`: Start/toggle Iron REPL
-	- `<leader>rf`: Focus REPL
-	- `<leader>rh`: Hide REPL
-	- `<leader>il`: Send line
-	- Visual mode `<leader>ic`: Send selection
-	- `<leader>if`: Send file
+In `.qmd` files, quarto-nvim's code runner is wired to slime, so its own
+chunk-running commands go to the same pane.
 
-Notes:
+## Keymaps
 
-- `vim-slime` is enabled as the primary send workflow.
-- DAP virtual text is enabled, so variable values show inline while stepping.
+Leader is `<Space>`.
 
-## Themes
+### REPL
+| Key | Mode | Action |
+|---|---|---|
+| `<leader>sc` | n | Slime: pick tmux pane (run once per session) |
+| `<leader>sl` | n | Send line |
+| `<leader>sp` | n | Send paragraph |
+| `<leader>s;` | v | Send selection |
 
-Recommended themes (installed):
+### LSP navigation
+| Key | Action |
+|---|---|
+| `<leader>sd` | Definitions |
+| `<leader>si` | Implementations (grep fallback) |
+| `<leader>sr` | References (grep fallback) |
+| `<leader>ss` / `<leader>sS` | Document / workspace symbols |
+| `<leader>so` / `<leader>sI` | Outgoing / incoming calls |
+| `<leader>uP` | Toggle Python strict diagnostics |
 
-- `kanagawa-wave` (default): balanced contrast, low eye strain.
-- `rose-pine`: soft palette with clear diagnostics.
-- `nightfox` (`nordfox`, `carbonfox`): crisp code contrast.
-- `gruvbox`: classic warm contrast for long sessions.
-- `everforest`: muted green tone for readability.
-- `vscode`: familiar visual feel from VS Code.
+### Quarto
+| Key | Mode | Action |
+|---|---|---|
+| `<leader>qp` / `<leader>qr` / `<leader>qa` | n | Preview / render / activate |
+| `<leader>qir` `<leader>qip` `<leader>qib` | n | Insert R / Python / Bash chunk |
+| `<leader>qwr` `<leader>qwp` `<leader>qwb` | v | Wrap selection in a chunk |
 
-Theme UI picker:
+### Python / testing / debug
+| Key | Action |
+|---|---|
+| `<leader>vs` | Select venv |
+| `<leader>tn` / `<leader>tf` / `<leader>ts` | Test nearest / file / summary |
+| `<leader>dR` | Debug current R file |
+| `<leader>dpm` / `<leader>dpc` | Debug Python test method / class |
 
-- `<leader>uT`: open Telescope colorscheme picker with live preview.
+### Files (Telescope)
+`<leader>ff` smart find · `<leader>fg` grep · `<leader>fb` buffers ·
+`<leader>fR` frecency · `<leader>fP` project files · `<leader>gP` project grep ·
+`<leader>gs` git status
 
-## Quarto and Notebooks
+### Markdown / notes
+`<leader>mp` browser preview · `<leader>o*` Obsidian (11 maps, see
+`lua/plugins/obsidian.lua`)
 
-`.qmd` (R/Python chunks):
+### AI
+`<leader>ac` Claude Code · `<leader>aa` Copilot Chat · `<leader>aw` workspace
+audit · `<leader>aD` deep audit · `<leader>aB` ask about open buffers
 
-- `.qmd` files are mapped to `quarto` filetype.
-- `<leader>qp`: Quarto preview.
-- `<leader>qr`: Quarto render.
-- `<leader>qa`: Quarto activate (LSP/chunk features).
+## Known collisions
 
-Recommended Quarto workflow (R-first):
+Deliberate, inherited from the pre-Omarchy config:
 
-- Start in a `.qmd` file and run `<leader>qa` once.
-- Insert R chunks quickly with `<leader>qir`.
-- Execute chunk code with your REPL flow (`vim-slime` or Molten).
-- Keep the live document open with `<leader>qp` while editing.
-- Render final output with `<leader>qr`.
+- `<leader>sd` / `<leader>sr` / `<leader>ss` shadow LazyVim's search maps.
+- `<leader>cf` (visual, CopilotChat fix) shadows LazyVim's **format**. Omarchy
+  sets `vim.g.autoformat = false`, so manual format matters here — rename this
+  in `lua/plugins/ai.lua` if you want it back.
+- The `<leader>s*` prefix is shared between slime and LSP navigation.
 
-Handy chunk shortcuts (`quarto`/`rmd` buffers):
+## Two upstream workarounds
 
-- `<leader>qir`: insert
-	```
-	```{r}
+Both fail *silently*, so they are worth knowing about before "fixing" them:
 
-	```
-- `<leader>qip`: insert Python chunk
-- `<leader>qib`: insert Bash chunk
-- Visual `<leader>qwr`: wrap selection in an R chunk
-- Visual `<leader>qwp`: wrap selection in a Python chunk
-- Visual `<leader>qwb`: wrap selection in a Bash chunk
+1. **`vim.g.lazyvim_python_lsp = "basedpyright"`** in `lua/config/options.lua`.
+   LazyVim's `lang.python` extra defaults to pyright; setting `pyright = false`
+   without this leaves Python with **no** language server at all. It must be in
+   `options.lua` — a plugin spec runs too late.
 
-`.ipynb` (Python notebooks):
-
-- Notebook files open through `jupytext` in `py:percent` style for editing in Neovim.
-- Use Molten to execute cells/chunks:
-	- `<leader>mj`: init kernel
-	- `<leader>ml`: eval line
-	- visual `<leader>mv`: eval selection
-	- `<leader>mo`: open output
-	- `<leader>mx`: interrupt kernel
-
-System tools needed:
-
-- `quarto` CLI for preview/render.
-- `jupytext` (`pip install jupytext`) for `.ipynb` conversion.
-- Jupyter kernel tools for Molten (for Python: `pip install pynvim jupyter ipykernel`).
-- R language server for chunk completions in `.qmd`: in R run `install.packages("languageserver")`.
-
-## Testing and R IDE Boost
-
-Python tests (`neotest` + pytest):
-
-- `<leader>tn`: run nearest test
-- `<leader>tf`: run tests in current file
-- `<leader>td`: debug nearest test with DAP
-- `<leader>ts`: toggle test summary
-- `<leader>to`: open test output
-
-R IDE support (`R.nvim`):
-
-- `<leader>rR`: start R session
-- `<leader>rQ`: stop R session
-- Keeps R completion/object tooling available for `r`, `rmd`, and `quarto` files.
-
-## Symbol Navigation (Project-Wide)
-
-- Put cursor on a function/symbol and use:
-	- `<leader>sd`: definitions (Telescope)
-	- `<leader>si`: implementations (Telescope)
-	- `<leader>sr`: references in project (Telescope)
-	- `<leader>ss`: symbols in current file
-	- `<leader>sS`: symbols in workspace
-	- `<leader>so`: outgoing calls (functions called by symbol under cursor)
-	- `<leader>sI`: incoming calls (functions that call symbol under cursor)
-
-Notes:
-
-- `<leader>sr` uses LSP references when available.
-- If LSP is not attached, `<leader>sr` falls back to project-wide Telescope grep for the word under cursor.
-- Call hierarchy mappings (`<leader>so`, `<leader>sI`) require LSP server support for call hierarchy.
-
-## Diagnostics (Relevant Errors First)
-
-- Diagnostics are tuned to reduce noise from cross-file OOP/type-analysis churn.
-- Inline virtual text shows only `ERROR` by default.
-- Underlines remain for `WARN` and `ERROR` so important issues are still visible.
-- Python language servers are set to `openFilesOnly` diagnostics with relaxed unknown-type rules.
-- Duplicate diagnostics are avoided by using `basedpyright` as the active Python type checker.
-
-Tips:
-
-- Toggle diagnostics on/off with LazyVim's `<leader>ud` when needed.
-- Toggle Python strict diagnostics with `<leader>uP`.
-- Open diagnostics in a list (Trouble) when you want full project triage.
-
-Strict mode (`<leader>uP`) does this:
-
-- Changes Python diagnostics scope from `openFilesOnly` to `workspace`.
-- Raises type checking from `basic` to `standard`.
-- Re-enables key unknown-type diagnostics as warnings.
-- Useful before PRs/releases when you want deeper project-wide validation.
+2. **The `setup.ruff` override** in `lua/plugins/lsp.lua`. LazyVim's ruff setup
+   handler returns whatever `Snacks.util.lsp.on()` returns, and a truthy return
+   means "handled, do not enable". Ruff ends up configured with a valid
+   `ruff server` cmd but never attaches. The override does the same
+   hover-disabling and explicitly returns `false`.

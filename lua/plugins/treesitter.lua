@@ -1,27 +1,23 @@
+-- Parsers for the R / Quarto / Markdown workflow.
+--
+-- `rnoweb` covers .Rnw (Sweave). `markdown` + `markdown_inline` are what
+-- quarto.lua registers for the `quarto` and `rmd` filetypes, so they must be
+-- installed even though .qmd is not markdown.
+
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-
-      local needed = {
+    opts = {
+      ensure_installed = {
         "r",
+        "rnoweb",
         "markdown",
         "markdown_inline",
-        "rnoweb",
         "yaml",
-      }
-
-      local have = {}
-      for _, parser in ipairs(opts.ensure_installed) do
-        have[parser] = true
-      end
-
-      for _, parser in ipairs(needed) do
-        if not have[parser] then
-          table.insert(opts.ensure_installed, parser)
-        end
-      end
-    end,
+        "python",
+        "bash",
+        "sql",
+      },
+    },
   },
 }

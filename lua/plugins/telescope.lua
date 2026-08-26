@@ -1,3 +1,28 @@
+-- Telescope, ported from RonyEA/nvim on 2026-08-26.
+--
+-- Omarchy's LazyVim uses snacks.nvim pickers. This adds Telescope alongside it
+-- and takes over the <leader>f* / <leader>g* keys, because that is the muscle
+-- memory being migrated. The snacks pickers stay available under their own
+-- LazyVim defaults.
+--
+-- Changed from the original: kkharji/sqlite.lua is no longer listed as a
+-- frecency dependency -- current telescope-frecency uses its own storage and
+-- does not need it. Every extension load is pcall-guarded, so if frecency
+-- fails <leader>ff silently falls back to plain find_files.
+
+-- LazyVim's root detection. The original called require("lazyvim.util").root(),
+-- which is the pre-LazyVim-global API; this tries the current one first.
+local function root()
+  if _G.LazyVim and _G.LazyVim.root then
+    return _G.LazyVim.root()
+  end
+  local ok, util = pcall(require, "lazyvim.util")
+  if ok and util.root then
+    return util.root()
+  end
+  return vim.uv.cwd()
+end
+
 return {
   "nvim-telescope/telescope.nvim",
   cmd = "Telescope",
@@ -5,53 +30,31 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "nvim-telescope/telescope-ui-select.nvim",
-    {
-      "nvim-telescope/telescope-fzf-native.nvim",
-      build = "make",
-    },
-    {
-      "nvim-telescope/telescope-frecency.nvim",
-      dependencies = {
-        "kkharji/sqlite.lua",
-      },
-    },
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "nvim-telescope/telescope-frecency.nvim",
   },
   keys = {
-    -- Plugin files
     {
       "<leader>fp",
       function()
-        require("telescope.builtin").find_files({
-          cwd = require("lazy.core.config").options.root,
-        })
+        require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root })
       end,
       desc = "Find Plugin File",
     },
-
-    -- Project root files
     {
       "<leader>fP",
       function()
-        require("telescope.builtin").find_files({
-          cwd = require("lazyvim.util").root(),
-          hidden = true,
-        })
+        require("telescope.builtin").find_files({ cwd = root(), hidden = true })
       end,
       desc = "Find Project File (Root)",
     },
-
-    -- Project root grep
     {
       "<leader>gP",
       function()
-        require("telescope.builtin").live_grep({
-          cwd = require("lazyvim.util").root(),
-        })
+        require("telescope.builtin").live_grep({ cwd = root() })
       end,
       desc = "Grep Project (Root)",
     },
-
-    -- Standard Telescope pickers
     {
       "<leader>ff",
       function()
@@ -60,9 +63,7 @@ return {
           prompt_title = "Smart Files (Recent + Frequent)",
         })
         if not ok then
-          require("telescope.builtin").find_files({
-            hidden = true,
-          })
+          require("telescope.builtin").find_files({ hidden = true })
         end
       end,
       desc = "Find Files (Smart)",
@@ -82,9 +83,7 @@ return {
     {
       "<leader>fo",
       function()
-        require("telescope.builtin").oldfiles({
-          cwd_only = true,
-        })
+        require("telescope.builtin").oldfiles({ cwd_only = true })
       end,
       desc = "Recent Files (Project)",
     },
@@ -94,9 +93,8 @@ return {
   opts = function(_, opts)
     local actions = require("telescope.actions")
     local themes = require("telescope.themes")
-    opts.defaults = opts.defaults or {}
 
-    -- UI / layout
+    opts.defaults = opts.defaults or {}
     opts.defaults.layout_strategy = "horizontal"
     opts.defaults.layout_config = vim.tbl_deep_extend("force", opts.defaults.layout_config or {}, {
       prompt_position = "top",
@@ -104,18 +102,16 @@ return {
     opts.defaults.sorting_strategy = "ascending"
     opts.defaults.winblend = 0
 
-    -- Key mappings
     opts.defaults.mappings = opts.defaults.mappings or {}
-    opts.defaults.mappings.i = vim.tbl_extend("force", opts.defaults.mappings.i or {}, {
-      ["<C-j>"] = actions.move_selection_next,
-      ["<C-k>"] = actions.move_selection_previous,
-    })
-    opts.defaults.mappings.n = vim.tbl_extend("force", opts.defaults.mappings.n or {}, {
-      ["<C-j>"] = actions.move_selection_next,
-      ["<C-k>"] = actions.move_selection_previous,
-    })
+    for _, mode in ipairs({ "i", "n" }) do
+      opts.defaults.mappings[mode] = vim.tbl_extend("force", opts.defaults.mappings[mode] or {}, {
+        ["<C-j>"] = actions.move_selection_next,
+        ["<C-k>"] = actions.move_selection_previous,
+      })
+    end
 
-    -- Ignore patterns
+    -- Data-science noise: caches, virtualenvs, renv libraries, and the
+    -- data/output directories that make a grep useless.
     opts.defaults.file_ignore_patterns = vim.list_extend(opts.defaults.file_ignore_patterns or {}, {
       "venv/",
       "%.venv/",
@@ -136,7 +132,6 @@ return {
       "results?/",
     })
 
-    -- Ripgrep arguments
     opts.defaults.vimgrep_arguments = {
       "rg",
       "--color=never",
@@ -168,20 +163,13 @@ return {
     opts.extensions.frecency = {
       show_scores = true,
       show_unindexed = true,
-      ignore_patterns = {
-        "*.git/*",
-        "*/tmp/*",
-      },
+      ignore_patterns = { "*.git/*", "*/tmp/*" },
       default_workspace = "CWD",
-      workspaces = {
-        CWD = (vim.uv or vim.loop).cwd(),
-      },
+      workspaces = { CWD = (vim.uv or vim.loop).cwd() },
     }
     opts.extensions["ui-select"] = themes.get_dropdown({
       previewer = false,
-      layout_config = {
-        width = 0.5,
-      },
+      layout_config = { width = 0.5 },
     })
 
     return opts

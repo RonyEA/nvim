@@ -1,13 +1,9 @@
-tt.*
-.tests
-doc/tags
-debug
-.repro
-foo.*
-*.log
-data
-
-# R session state -- an R REPL started here once and left these behind.
+# Neovim keeps plugin code and state outside ~/.config/nvim, so there is very
+# little to ignore here. These are the strays an R or Python session leaves
+# behind when its cwd happens to be the config directory.
 .RData
 .Rhistory
 .Rproj.user/
+__pycache__/
+*.pyc
+.venv/
