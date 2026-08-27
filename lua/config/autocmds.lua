@@ -62,12 +62,20 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Prose editing. LazyVim's own `lazyvim_wrap_spell` augroup already turns on
 -- `wrap` and `spell` for markdown/text/gitcommit, so only `linebreak` is added
 -- here -- without it, `wrap` breaks mid-word.
+--
+-- `spell` is explicitly turned back off: this file is sourced after LazyVim's
+-- autocmds, so for a shared filetype this callback runs second and wins. The
+-- pattern therefore has to cover every filetype in `lazyvim_wrap_spell`
+-- (text, plaintex, typst, gitcommit, markdown), not just the prose ones --
+-- otherwise spelling would still come on for, say, a typst file. Wrap is
+-- kept; only the spell checker is off. Toggle it per buffer with <leader>us.
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("ron_prose", { clear = true }),
-  pattern = { "markdown", "text", "gitcommit", "quarto" },
+  pattern = { "markdown", "text", "gitcommit", "quarto", "plaintex", "typst" },
   callback = function()
     vim.opt_local.linebreak = true
     vim.opt_local.breakindent = true
+    vim.opt_local.spell = false
   end,
 })
 

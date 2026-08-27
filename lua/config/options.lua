@@ -33,3 +33,11 @@ vim.diagnostic.config({
   update_in_insert = false,
   float = { border = "rounded", source = "if_many" },
 })
+
+-- Diagnostics, inlay hints and spell check all start OFF -- a quiet buffer on
+-- open. None of this is permanent; each has a LazyVim toggle:
+--   <leader>ud  diagnostics   (comes back with the config above)
+--   <leader>uh  inlay hints   (see inlay_hints in lua/plugins/lsp.lua)
+--   <leader>us  spelling      (per buffer; see lua/config/autocmds.lua)
+vim.diagnostic.enable(false)
+vim.opt.spell = false

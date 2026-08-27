@@ -6,6 +6,11 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = {
+      -- LazyVim turns the builtin LSP inlay hints on by default. Off here:
+      -- on typed Python they double the visual width of every line. Toggle
+      -- per buffer with <leader>uh.
+      inlay_hints = { enabled = false },
+
       servers = {
         -- Deliberately NOT installed through Mason. r_language_server is the R
         -- package `languageserver`, which has to run inside the same R that
