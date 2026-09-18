@@ -47,6 +47,11 @@ vim.filetype.add({
   },
 })
 
+-- :JsonFormat, <leader>cJ, and the automatic reflow of minified one-line JSON.
+-- Split into its own module because it is a good half-page of logic with its
+-- own guards; the reasoning lives there.
+require("config.json").setup()
+
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("ron_quarto_conceal", { clear = true }),
   pattern = { "quarto", "rmd" },
